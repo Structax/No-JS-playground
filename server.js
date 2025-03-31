@@ -29,12 +29,16 @@ app.post("/build", (req, res) => {
       return res.status(500).send(`Build error:\n${stderr}`);
     }
 
-    const htmlPath = path.resolve("output/build.html");
-    if (!fs.existsSync(htmlPath)) {
+    const outputDir = path.resolve("output");
+    const outputFile = fs
+      .readdirSync(outputDir)
+      .find((f) => f.endsWith(".html"));
+
+    if (!outputFile) {
       return res.status(500).send("No HTML output generated.");
     }
 
-    const html = fs.readFileSync(htmlPath, "utf-8");
+    const html = fs.readFileSync(path.join(outputDir, outputFile), "utf-8");
     res.send(html);
   });
 });
