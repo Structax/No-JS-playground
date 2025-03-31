@@ -5,9 +5,6 @@ const path = require("path");
 
 const app = express();
 const PORT = 3000;
-const inputPath = path.join(__dirname, "tmp", "input.nojs");
-fs.writeFileSync(inputPath, code);
-
 app.use(express.static("public"));
 app.use(express.json());
 
