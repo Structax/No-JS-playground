@@ -8,7 +8,7 @@ const PORT = 3000;
 app.use(express.static("public"));
 app.use(express.json());
 
-// ✅ ここを追加（Render用の対策）
+// ✅ Render対応: tmp/output を自動生成
 ["tmp", "output"].forEach((dir) => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir);
@@ -18,16 +18,17 @@ app.use(express.json());
 app.post("/build", (req, res) => {
   const code = req.body.code;
 
-  // Save .nojs input
-  fs.writeFileSync("tmp/input.nojs", code);
+  // Save input.nojs
+  const inputPath = path.join(__dirname, "tmp", "input.nojs");
+  fs.writeFileSync(inputPath, code);
 
-  // Run `nojs build tmp/input.nojs`
-  exec("zig-out\\bin\\nojs.exe build tmp/input.nojs", (err, stdout, stderr) => {
+  // ✅ Linux対応: 実行パスを動的に解決（.exe ではない）
+  const nojsPath = path.resolve(__dirname, "zig-out", "bin", "nojs");
+  exec(`${nojsPath} build tmp/input.nojs`, (err, stdout, stderr) => {
     if (err) {
-      return res.status(500).send(`Build error: ${stderr}`);
+      return res.status(500).send(`Build error:\n${stderr}`);
     }
 
-    // Read generated HTML
     const htmlPath = path.resolve("output/build.html");
     if (!fs.existsSync(htmlPath)) {
       return res.status(500).send("No HTML output generated.");
