@@ -5,9 +5,18 @@ const path = require("path");
 
 const app = express();
 const PORT = 3000;
+const inputPath = path.join(__dirname, "tmp", "input.nojs");
+fs.writeFileSync(inputPath, code);
 
 app.use(express.static("public"));
 app.use(express.json());
+
+// ✅ ここを追加（Render用の対策）
+["tmp", "output"].forEach((dir) => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir);
+  }
+});
 
 app.post("/build", (req, res) => {
   const code = req.body.code;
